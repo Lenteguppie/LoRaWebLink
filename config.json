@@ -1,0 +1,16 @@
+{
+  "Database": {
+    "username": "root",
+    "password": "",
+    "address": "localhost",
+    "port": 3306,
+    "databaseName": "loraserver"
+  },
+  "Webserver": {
+    "port": 8555
+  },
+  "General": {
+    "Logger": true,
+    "ConnectionCheck": false
+  }
+}
