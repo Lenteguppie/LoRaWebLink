@@ -1,10 +1,17 @@
 package Extentions.Logger;
 
 
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.*;
 
+
+
 public class LoggerHelper {
+
+    String sFileName = new SimpleDateFormat ("dd-MMM-yyyy").format(new Date ());
 
     public enum Types{
         WARNING,
@@ -30,13 +37,13 @@ public class LoggerHelper {
         }
 
 		// check if logs dir exists
-		File logDir = new File("./LOGS/"); 
+		File logDir = new File ("./LOGS/");
 		if( !(logDir.exists()) )
 			logDir.mkdir();
         
         logger.setLevel(Level.INFO);
-        FileHandler fileTxt = new FileHandler("./LOGS/Logging.txt");
-        FileHandler fileHTML = new FileHandler("./LOGS/Logging.html");
+        FileHandler fileTxt = new FileHandler("./LOGS/"+ sFileName + ".txt", true);
+        FileHandler fileHTML = new FileHandler("./LOGS/"+ sFileName +".html", true);
 
         // create a TXT formatter
         SimpleFormatter formatterTxt = new SimpleFormatter();
