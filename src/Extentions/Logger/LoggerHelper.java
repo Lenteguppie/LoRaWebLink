@@ -29,6 +29,11 @@ public class LoggerHelper {
             rootLogger.removeHandler(handlers[0]);
         }
 
+		// check if logs dir exists
+		File logDir = new File("./LOGS/"); 
+		if( !(logDir.exists()) )
+			logDir.mkdir();
+        
         logger.setLevel(Level.INFO);
         FileHandler fileTxt = new FileHandler("./LOGS/Logging.txt");
         FileHandler fileHTML = new FileHandler("./LOGS/Logging.html");
@@ -42,6 +47,7 @@ public class LoggerHelper {
         Formatter formatterHTML = new MyHtmlFormatter();
         fileHTML.setFormatter(formatterHTML);
         logger.addHandler(fileHTML);
+        
     }
 
     static void logEntry(String tag, String msg, boolean warning) {
