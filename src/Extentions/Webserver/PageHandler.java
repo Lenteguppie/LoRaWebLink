@@ -1,5 +1,6 @@
 package Extentions.Webserver;
 
+import Extentions.Logger.Log;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -42,6 +43,7 @@ public class PageHandler implements HttpHandler {
 
     public static class Page {
 
+        private static final String TAG = PageHandler.class.getSimpleName ();
         private HashMap<String, String> arguments;
         private boolean hasArgs;
         private HttpExchange exchange;
@@ -115,6 +117,7 @@ public class PageHandler implements HttpHandler {
                     } finally {
                         exchange = null;
                     }
+                    Log.T (TAG, "page handled" );
                 }
 
         }

@@ -8,10 +8,12 @@ import org.json.JSONObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Gateway {
     private String EUFI, name, uid, brand;
+    private LocalDateTime lastChecked;
     private User owner;
     private int frequency;
     private LocationObject location;
@@ -103,6 +105,22 @@ public class Gateway {
             gatewaysJSONArray.put(gateway.toJSON());
         }
         return gatewaysJSONArray;
+    }
+
+    public LocalDateTime getLastChecked() {
+        return lastChecked;
+    }
+
+    public void setLastChecked(LocalDateTime lastChecked) {
+        this.lastChecked = lastChecked;
+    }
+
+    public String getEUFI() {
+        return EUFI;
+    }
+
+    public void setEUFI(String EUFI) {
+        this.EUFI = EUFI;
     }
     //endregion
 }

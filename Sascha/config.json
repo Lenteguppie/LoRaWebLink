@@ -1,0 +1,16 @@
+{
+  "Database": {
+    "username": "loramanager",
+    "password": "jemoeder",
+    "address": "192.168.0.40",
+    "port": 3306,
+    "databaseName": "loraserver"
+  },
+  "Webserver": {
+    "port": 6456
+  },
+  "General": {
+    "Logger": true,
+    "ConnectionCheck": false
+  }
+}

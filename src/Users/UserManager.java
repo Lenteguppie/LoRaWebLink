@@ -210,7 +210,7 @@ public class UserManager {
     public User getUserFromDatabaseUID(String uuid) {
         //TODO Get the user from the database with UUID
         User tempUser;
-        databaseManager.setQueryFormat("SELECT * FROM Users WHERE uid='%s'");       // SELECT the first row from the result
+        databaseManager.setQueryFormat("SELECT * FROM users WHERE uid='%s'");       // SELECT the first row from the result
         try {
             ResultSet r = databaseManager.sendArgs(new String[]{uuid});
             r.absolute(1);
@@ -225,7 +225,7 @@ public class UserManager {
 
     public User getUserFromDatabase(String email) {
         User tempUser;
-        databaseManager.setQueryFormat("SELECT * FROM Users WHERE email='%s'");       // SELECT the first row from the result
+        databaseManager.setQueryFormat("SELECT * FROM users WHERE email='%s'");       // SELECT the first row from the result
         try {
             ResultSet r = databaseManager.sendArgs(new String[]{email});
             tempUser = new User(r);

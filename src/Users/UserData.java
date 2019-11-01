@@ -124,9 +124,6 @@ public class UserData implements Jsonable{
     }
     //endregion
 
-
-
-
     public void generateUUID() {
         try {
             uid = UUID.randomUUID();

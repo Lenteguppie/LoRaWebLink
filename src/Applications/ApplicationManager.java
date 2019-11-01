@@ -3,12 +3,13 @@ package Applications;
 import Extentions.DatabaseManager;
 import Modules.AccessKey;
 import Modules.LocationObject;
+import Modules.Node;
 import Users.User;
-import Users.UserManager;
 import Users.UserSessionManager;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -99,6 +100,17 @@ public class ApplicationManager {
         return false;
     }
 
+    public Node.DataSet getNodeData(Node node, int nodeDataLimit){
+        databaseManager.setQueryFormat("SELECT * FROM node_data WHERE node_id = '%s' ORDER BY `timestamp` DESC LIMIT %s;");
+        try {
+            ResultSet resultSet = databaseManager.sendArgs(new String[]{node.getUid(), String.valueOf(nodeDataLimit)});
+            return node.createDataSet(resultSet);
+        } catch (SQLException e) {
+            return null;
+        }
+    }
+
+
     public static JSONObject listToJSON(ArrayList<Application> applications){
         JSONObject applicationsJSON = new JSONObject();
         JSONArray applicationArray = new JSONArray();
@@ -107,6 +119,10 @@ public class ApplicationManager {
         }
         applicationsJSON.put("applications", applicationArray);
         return applicationsJSON;
+    }
+
+    public Application.ApplicationDataSet getApplicationData(Application application, int limit) {
+       return application.createDataSet(this, limit);
     }
 
     public static class ApplicationException extends Exception{

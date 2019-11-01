@@ -6,14 +6,14 @@ import Extentions.ConfigManager;
 import Extentions.DatabaseManager;
 import Extentions.FileManager;
 import Extentions.Logger.Log;
-import Extentions.Webserver.PageHandler;
 import Extentions.Webserver.Webserver;
-import Modules.AccessKey;
 import Modules.Gateway;
 import Modules.LocationObject;
 import Modules.Node;
-import Users.*;
-import org.json.JSONArray;
+import Users.User;
+import Users.UserManager;
+import Users.UserSession;
+import Users.UserSessionManager;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -43,12 +43,7 @@ public class WebServices {
 
     private void addDefaultHandlers() {
 
-        webServer.addPageListener("/", new PageHandler.OnPageListener() {
-            @Override
-            public void onPage(PageHandler.Page page) {
-                page.handle("online");
-            }
-        });
+        webServer.addPageListener("/", page -> page.handle("online"));
 
         webServer.addPageListener("/login", page -> {
             JSONObject response = new JSONObject();
@@ -101,21 +96,28 @@ public class WebServices {
             page.handle(response.toString());
         });
 
+
+        //region Application methods
+
         webServer.addPageListener("/node", page -> {
             JSONObject response = new JSONObject();
             if(page.hasArgs(new String[]{"sessionKey"}) && userSessionManager.isValidSession(page.getArg("sessionKey"))){
                 //region remove node from app
                 if(page.hasArgs(new String[]{"node_uid", "remove"})){
+                    Log.T(TAG, "Node request for node: " + page.getArg ("node_uid"));
                     if(page.getArg("remove").equals("true")){
                         User user = userSessionManager.getSession(page.getArguments().get("sessionKey")).getUser();
                         try {
                             for (Node node:userSessionManager.getNodes(user)) {
                                 if(node.getOwner().getUserData().getUUID().toString().equals(user.getUserData().getUUID().toString())){
-                                    response.put("done", node.remove(databaseManager));
-                                    break;
+                                    if(node.getUid().equals(page.getArg("node_uid"))) {
+                                        response.put("done", node.remove(databaseManager));
+                                        break;
+                                    }
                                 }
                             }
                             if(!response.has("done")){
+                                Log.d (TAG + " /node", "Node could not be removed, the user was not the node owner!");
                                 response.put("done", false);
                                 response.put("error", "you are not owner of this node");
                             }
@@ -129,6 +131,7 @@ public class WebServices {
 
                 //region addnode to app
                 else if(page.hasArgs(new String[]{"name", "brand", "frequency", "lat", "long", "alt", "uid"})){
+                    Log.T(TAG, "Node request for node: " + page.getArg ("uid"));
                     try {
                         Application application = applicationManager.getApplicationComplete(new Application(page.getArg("uid")));
                         Node newNode = new Node();
@@ -139,12 +142,17 @@ public class WebServices {
                         newNode.setOwner(userSessionManager.getSession(page.getArg("sessionKey")).getUser());
                         newNode.setUid(Node.generateUID());
                         response.put("done", application.addNode(databaseManager,newNode));
+                        Log.T(TAG + " /node", String.format("New node %s added for application %s", newNode.getUid (), application.getName ()) );
                     } catch (ApplicationManager.ApplicationException e) {
+                        Log.d(TAG + " /node", e.getMessage ());
                         response.put("done", false);
                         response.put("error", e.getMessage());
                     }
                 }
                 //endregion
+            }else{
+                Log.d(TAG + " /node", "Invalid remove request");
+                response.put("error", "Invalid remove request");
             }
             page.handle(response.toString());
         });
@@ -223,6 +231,51 @@ public class WebServices {
             }
             page.handle(response.toString());
         });
+
+        webServer.addPageListener("/addContributor", page -> {
+            JSONObject response = new JSONObject();
+            if(page.hasArg("sessionKey") && userSessionManager.isValidSession(page.getArg("sessionKey"))) {
+                if (page.hasArgs(new String[]{"uid", "user_uid", "role"})) {
+                    try {
+                        Application application = applicationManager.getApplicationComplete(new Application(page.getArg("uid")));
+                        if(userSessionManager.getSession(page.getArg("sessionKey")).getUser().getUserData().getUUID().toString().equals(application.getOwner().getUserData().getUUID().toString())){
+                            //TODO maken dat applcatie owner het kan aanmaken.
+                        }
+                    } catch (ApplicationManager.ApplicationException e) {
+                        e.printStackTrace();
+                    }
+                    response.put("set", true);
+                }
+                else{
+                    response.put("error","invalid addContributor request");
+                }
+            }else{
+                response.put("error", "invalid session please try again");
+            }
+            page.handle(response.toString());
+        });
+
+        webServer.addPageListener("/data", page -> {
+            JSONObject response = new JSONObject();
+            if(page.hasArg("sessionKey") && userSessionManager.isValidSession(page.getArg("sessionKey"))){
+                if(page.hasArg("appID")){ Application application = new Application(page.getArg("appID"));
+                    Application.ApplicationDataSet applicationDataSet;
+                    if (page.hasArg("limit")){
+                        applicationDataSet = applicationManager.getApplicationData(application, Integer.parseInt(page.getArg("limit")));
+                    }else{
+                        applicationDataSet = applicationManager.getApplicationData(application, 50);
+                    }
+                    response = applicationDataSet.toJSON();
+                }else{
+                    response.put("error","invalid data request");
+                }
+            }else{
+                response.put("error", "invalid session");
+            }
+            page.handle(response.toString());
+        });
+
+        //endregion
 
         webServer.addPageListener("/map", page -> {
             JSONObject response = new JSONObject();

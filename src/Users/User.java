@@ -94,7 +94,6 @@ public class User {
         if(allInfo){
             userObject.put("firstname", getUserData().getFirstName());
             userObject.put("lastname", getUserData().getLastName());
-            userObject.put("password", getUserData().getPassword());
             userObject.put("uid", getUserData().getUUID().toString());
         }
         return userObject;

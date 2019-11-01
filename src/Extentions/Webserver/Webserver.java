@@ -7,6 +7,7 @@ import com.sun.net.httpserver.HttpServer;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 
 import static Extentions.ConfigManager.ConfigManagerException;
@@ -15,13 +16,17 @@ public class Webserver implements Runnable{
 
     private static String TAG = Webserver.class.getSimpleName();
     private PageHandler pageHandler;
-    private HttpServer server;
+    private static HttpServer server;
+    private static InetSocketAddress boundaddres;
     private int port;
 
     public Webserver(int port){
         this.port = port;
         try {
-            this.server = HttpServer.create(new InetSocketAddress(port), 0);
+//            this.server = HttpServer.create(new InetSocketAddress(8555), 0);
+            this.server = HttpServer.create (new InetSocketAddress ("0.0.0.0", port),0);
+//            this.server.bind (new InetSocketAddress ("0.0.0.0", 8555), 0);
+            this.boundaddres = server.getAddress ();
             this.pageHandler = new PageHandler();
         } catch (IOException e) {
             e.printStackTrace();
@@ -31,7 +36,10 @@ public class Webserver implements Runnable{
     public Webserver(int port, Boolean debug){
         this.port = port;
         try {
-            this.server = HttpServer.create(new InetSocketAddress(port), 0);
+            this.server = HttpServer.create((new InetSocketAddress ("0.0.0.0", port)), 0);
+//            this.server.bind (new InetSocketAddress ("0.0.0.0", 8555), 0);
+            this.boundaddres = this.server.getAddress ();
+            Log.d (TAG, server.getAddress ());
             this.pageHandler = new PageHandler(debug);
         } catch (IOException e) {
             e.printStackTrace();
@@ -62,6 +70,7 @@ public class Webserver implements Runnable{
             if(debug){
                 Log.W(TAG, "Webserver initiated in debugger mode");
             }
+//            Log.d (TAG, String.format ("Webserver running on: %s", Webserver.server.getAddress().getHostString ()));
             return new Webserver((Integer) serverConfig.get("port"), debug);
         }
         throw new ConfigManagerException("config file is null");

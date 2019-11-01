@@ -132,7 +132,6 @@ public class Application {
     }
 
     //region node methodes
-
     public ArrayList<Node> getNodes() {
         return node;
     }
@@ -294,7 +293,6 @@ public class Application {
         return null;
     }
 
-
     public JSONObject toJSON(boolean allInfo) {
         JSONObject applicationObject = new JSONObject();
         applicationObject.put("date", getCreationDate());
@@ -358,5 +356,60 @@ public class Application {
 
     public String getCreationDate() {
         return creationDate;
+    }
+
+    public ApplicationDataSet createDataSet(ApplicationManager applicationManager, int limit){
+        ApplicationDataSet dataSet = new ApplicationDataSet(this, limit);
+        return dataSet.getProcessedDataSet(applicationManager);
+    }
+
+    public class ApplicationDataSet{
+
+        private final Application application;
+        private int limit;
+        private volatile boolean processed = false;
+        private ArrayList<Node> nodes = null;
+        private ArrayList<Node.DataSet> nodeDataSets = new ArrayList<>();
+        private JSONObject ApplicationDataSetJSON = new JSONObject();
+
+        public ApplicationDataSet(Application application, int limit){
+            this.application = application;
+            this.limit = limit;
+        }
+
+        public void processDataSet(ApplicationManager applicationManager){
+            new Thread(() -> {
+                processed = false;
+                ApplicationDataSetJSON = new JSONObject();
+                try {
+                    nodes = applicationManager.getApplicationComplete(application).getNodes();
+                } catch (ApplicationManager.ApplicationException e) {
+                    processed = true;
+                }
+                JSONArray nodeDataSetArray = new JSONArray();
+                for (Node node: nodes) {
+                    Node.DataSet dataSet = applicationManager.getNodeData(node, limit);
+                    if(dataSet != null) {
+                        JSONObject nodeDataSet = dataSet.getJSONPacket();
+                        if(nodeDataSet != null) {
+                            nodeDataSetArray.put(nodeDataSet);
+                            nodeDataSets.add(dataSet);
+                        }
+                    }
+                }
+                ApplicationDataSetJSON.put("dataset", nodeDataSetArray);
+                processed = true;
+            }).start();
+        }
+
+        public ApplicationDataSet getProcessedDataSet(ApplicationManager applicationManager){
+            processDataSet(applicationManager);
+            while (!processed) {Thread.onSpinWait();}
+            return this;
+        }
+
+        public JSONObject toJSON(){
+            return ApplicationDataSetJSON;
+        }
     }
 }
